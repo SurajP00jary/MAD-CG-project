@@ -1,0 +1,258 @@
+
+#define _CRT_SECURE_NO_WARNINGS
+#define _USE_MATH_DEFINES
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include <cmath>
+#include<ctime>
+#include <gl/glut.h>
+#include <gl/gl.h>
+#include <math.h>
+#include <time.h>
+#include <sys/timeb.h>
+int x, y;
+int i, count;
+char t[2];
+int df = 10;
+const float clockR = 80.0f,
+clockVol = 100.0f,
+
+angle1min = M_PI / 30.0f,
+
+minStart = 0.9f,
+minEnd = 1.0f,
+
+stepStart = 0.8f,
+stepEnd = 1.0f;
+
+float angleHour = 0,
+angleMin = 0,
+angleSec = 0;
+void output(int x, int y, const char* string)
+{
+	int len, i;
+
+	glRasterPos2f(x, y);
+	len = (int)strlen(string);
+	for (i = 0; i < len; i++)
+	{
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, string[i]);
+	}
+}
+
+void drawstring(int x, int y, const char* string, void* font)
+{
+	int len, i;
+
+	glRasterPos2f(x, y);
+	len = (int)strlen(string);
+	for (i = 0; i < len; i++)
+	{
+		glutBitmapCharacter(font, string[i]);
+	}
+}
+void numbers()
+{
+	glRasterPos2i(45, 40);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '3');
+	glRasterPos2i(-2, -80);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '6');
+	glRasterPos2i(-47, 33);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '9');
+	glRasterPos2i(-4, 84);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '1');
+	glRasterPos2i(-1, 84);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '2');
+	glRasterPos2i(24, 77);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '1');
+	glRasterPos2i(40, 60);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '2');
+	glRasterPos2i(40, 20);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '4');
+	glRasterPos2i(25, 2);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '5');
+	glRasterPos2i(-27, 0);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '7');
+	glRasterPos2i(-39, 15);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '8');
+	glRasterPos2i(-45, 58);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '1');
+	glRasterPos2i(-42, 58);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '0');
+	glRasterPos2i(-25, 78);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '1');
+	glRasterPos2i(-23, 78);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '1');
+}
+
+//front page 
+void frontscreen(void)
+{
+
+	glClear(GL_COLOR_BUFFER_BIT);
+	glLoadIdentity();
+	glColor3f(1, 1, 1);
+	drawstring(55, -80, " Press ENTER to go To next screen", GLUT_BITMAP_HELVETICA_18);
+	drawstring(-75, -80, "Maximize window for better view", GLUT_BITMAP_HELVETICA_12);
+	glColor3f(1, 1, 1);
+	output(-70, 85, "JNN COLLEGE OF ENGINEERING");
+	glColor3f(1, 1, 1);
+	output(-65, 75, "DEPARTMENT OF COMPUTER SCIENCE AND ENGINEERING");
+	glColor3f(1, 0, 1);
+	output(-32, 40, "A Mini Project On:-");
+	glColor3f(0, 1, 0.5);
+	output(-35, 30, "\"ANALOG CLOCK WITH PENDULUM AND DIGITAL CLOCK \"");
+	glColor3f(1, 0, 1);
+	output(-35, 12, "By :");
+	glColor3f(1, 0, 0);
+	output(-35, 5, "Suraj K R,Siddesh,Sneha H M,Teju B N ");
+
+	output(40, 80, "");
+	glColor3f(1, 0, 1);
+	output(-35, -30, "Under the Guidence of :");
+	glColor3f(1, 0, 0);
+	output(40, 50, " ");
+	glColor3f(1, 0, 0);
+	output(1, -45, "Mrs.Sushma R B");
+	glColor3f(1, 0, 0);
+	drawstring(4, -55, "Asst.Professor,Dept. of CSE", GLUT_BITMAP_HELVETICA_12);
+	glColor3f(1, 0, 0);
+	output(40, 30, " ");
+	glColor3f(1, 0, 0);
+	output(1, -65, "Mr.Chakrapani D S");
+
+	drawstring(4, -75, "Asst.Processor,Dept. of CSE", GLUT_BITMAP_HELVETICA_12);
+	glFlush();
+
+}
+void newLine(float rStart, float rEnd, float angle) {
+	float c = cos(angle), s = sin(angle);
+	glVertex2f(clockR * rStart * c, clockR * rStart * s);
+	glVertex2f(clockR * rEnd * c, clockR * rEnd * s);
+}
+
+//Display Function
+void RenderScene(void) {
+	int i;
+	glClear(GL_COLOR_BUFFER_BIT);
+	if (df == 10)
+		frontscreen();
+	else if (df == 0)
+	{
+		glColor3f(1.0f, 0.0f, 0.0f);
+		glLineWidth(2.0f);
+		glEnable(GL_LINE_SMOOTH);
+		glEnable(GL_POINT_SMOOTH);
+		glEnable(GL_POLYGON_SMOOTH);
+
+		glBegin(GL_LINES);
+		for (i = 0; i < 60; i++) {
+			if (i % 5) { // normal minute
+				if (i % 5 == 1)
+					glColor3f(0.0f, 1.0f, 1.0f);
+				newLine(minStart, minEnd, i * angle1min);
+			}
+			/*else {
+				glColor3f(0.0f, 1.0f, 0.0f);
+				newLine(stepStart, stepEnd, i * angle1min);
+			}*/
+		}
+		glEnd();
+
+		glLineWidth(3.0f);
+		glBegin(GL_LINES);
+		newLine(0.0f, 0.5f, -angleHour + M_PI / 2);
+		newLine(0.0f, 0.8f, -angleMin + M_PI / 2);
+		glEnd();
+
+		glLineWidth(1.0f);
+		glColor3f(0.0f, 0.0f, 1.0f);
+		glBegin(GL_LINES);
+		newLine(0.0f, 0.8f, -angleSec + M_PI / 2);
+		glEnd();
+		glColor3f(1, 0, 0);
+		numbers();
+
+		glFlush();
+		//glutSwapBuffers();
+	}
+}
+void TimerFunction(int value) {
+	struct timeb tb;
+	time_t tim = time(0);
+	struct tm* t;
+	t = localtime(&tim);
+	ftime(&tb);
+
+	angleSec = (float)(t->tm_sec + (float)tb.millitm / 1000.0f) / 30.0f * M_PI;
+	angleMin = (float)(t->tm_min) / 30.0f * M_PI + angleSec / 60.0f;
+	angleHour = (float)(t->tm_hour > 12 ? t->tm_hour - 12 : t->tm_hour) / 6.0f * M_PI +
+		angleMin / 12.0f;
+
+	glutPostRedisplay();
+	glutTimerFunc(33, TimerFunction, 1);
+}
+void SetupRC(void) {
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glPointSize(18.0);
+
+	glMatrixMode(GL_MODELVIEW);
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+}
+
+///////////////////////////////////////////////////////////
+// Called by GLUT library when the window has chanaged size
+//void clockpage()
+void keyboard(unsigned char key, int x, int y)
+{
+
+	if (df == 10 && key == 13)
+		df = 0;
+	glutPostRedisplay();
+
+}
+
+void ChangeSize(GLsizei w, GLsizei h)
+{
+	GLfloat aspectRatio;
+
+	// Prevent a divide by zero
+	if (h == 0)
+		h = 1;
+
+	// Set Viewport to window dimensions
+	glViewport(0, 0, w, h);
+
+	// Reset coordinate system
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	// Establish clipping volume (left, right, bottom, top, near, far)
+	aspectRatio = (GLfloat)w / (GLfloat)h;
+	if (w <= h)
+		glOrtho(-clockVol, clockVol, -clockVol / aspectRatio, clockVol / aspectRatio, 1.0, -1.0);
+	else
+		glOrtho(-clockVol * aspectRatio, clockVol * aspectRatio, -clockVol, clockVol, 1.0, -1.0);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+}
+
+
+int main(int argc, char** argv)
+{
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+	glutInitWindowSize(600, 600);
+	glutCreateWindow("Analog Clock");
+	glutReshapeFunc(ChangeSize);
+	glutDisplayFunc(RenderScene);
+	glutKeyboardFunc(keyboard);
+	glutTimerFunc(33, TimerFunction, 1);
+	SetupRC();
+	//myinit();
+	glutMainLoop();
+	return 0;
+}
