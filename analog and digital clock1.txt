@@ -1,0 +1,460 @@
+#define _CRT_SECURE_NO_WARNINGS
+#define _USE_MATH_DEFINES
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include <cmath>
+#include<ctime>
+#include <gl/glut.h>
+#include <gl/gl.h>
+#include <math.h>
+#include <time.h>
+#include <string>
+using namespace std;
+
+#include <sys/timeb.h>
+#define PI acos(-1.0)  // 3.1415926535897932
+int  refreshMills = 1000;
+int x, y;
+int i, count;
+char t[2];
+int df = 10;
+const float clockR = 80.0f,
+clockVol = 100.0f,
+
+angle1min = M_PI / 30.0f,
+
+minStart = 0.9f,
+minEnd = 1.0f,
+
+stepStart = 0.8f,
+stepEnd = 1.0f;
+
+float angleHour = 0,
+angleMin = 0,
+angleSec = 0;
+int a = 0;
+
+
+double pol[7][6][2] = {
+	{ {19.02,52.36},{18.13,51.35},{17.52,45.95},{18.24,44.96},{19.04,46},{19.66,51.28}},
+	{ {18.12,44.29},{17.24,43.28},{16.63,37.88},{17.35,36.89},{18.15,37.93},{18.77,43.21}},
+	{ {17.8,36.4},{18.66,35.81},{24.6,35.81},{25.39,36.59},{24.63,37.42},{18.66,37.42}},
+	{ {18.73,44.55},{19.34,43.64},{25.27,43.7},{26.11,44.52},{25.43,45.41},{19.47,45.45}},
+	{ {19.49,52.74},{20.18,51.74},{25.97,51.71},{26.87,52.6},{26.01,53.38},{20.38,53.42}},
+	{ {27.29,52.32},{26.41,51.31},{25.79,45.91},{26.51,44.92},{27.31,45.96},{27.94,51.24}},
+	{ {26.51,44.33},{25.63,43.32},{25.02,37.92},{25.79,37.02},{26.54,37.97},{27.16,43.25}} };
+int digits[10][7];
+
+
+void circle(double r, double cx, double cy, double R, double G, double B, double O)
+{
+	glColor4d(R / 255.0, G / 255.0, B / 255.0, O);
+	glBegin(GL_POLYGON);
+	for (int i = 0; i <= 360; i++)
+		glVertex2d(cx + (cos(i * (PI / 180.0)) * r), cy + (sin(i * (PI / 180.0)) * r));
+	glEnd();
+}
+
+
+
+
+void import_data()
+{
+
+	int temp[10][7] = { {1,2,3,5,6,7,7},{6,7,7,7,7,7,7},{2,3,4,5,6,6,6},{3,4,5,6,7,7,7},{1,4,6,7,7,7,7},{1,3,4,5,7,7,7},{1,2,3,4,5,7,7},{5,6,7,7,7,7,7},{1,2,3,4,5,6,7},{1,3,4,5,6,7,7} };;
+	for (int i = 0; i < 10; i++) {
+		for (int j = 0; j < 7; j++)digits[i][j] = 0;
+		for (int j = 0; j < 7; j++)digits[i][temp[i][j] - 1] = 1;
+	}
+}
+
+
+
+
+void output(int x, int y, const char* string)
+{
+	int len, i;
+
+	glRasterPos2f(x, y);
+	len = (int)strlen(string);
+	for (i = 0; i < len; i++)
+	{
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, string[i]);
+	}
+}
+
+void drawstring(int x, int y, const char* string, void* font)
+{
+	int len, i;
+
+	glRasterPos2f(x, y);
+	len = (int)strlen(string);
+	for (i = 0; i < len; i++)
+	{
+		glutBitmapCharacter(font, string[i]);
+	}
+}
+void numbers()
+{
+	glRasterPos2i(73, -2);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '3');
+	glRasterPos2i(-2, -80);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '6');
+	glRasterPos2i(-77, -2);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '9');
+	glRasterPos2i(-4, 74);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '1');
+	glRasterPos2i(-1, 74);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '2');
+	glRasterPos2i(37, 62);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '1');
+	glRasterPos2i(64, 36);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '2');
+	glRasterPos2i(64, -42);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '4');
+	glRasterPos2i(35, -69);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '5');
+	glRasterPos2i(-38, -69);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '7');
+	glRasterPos2i(-66, -40);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '8');
+	glRasterPos2i(-69, 34);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '1');
+	glRasterPos2i(-66, 34);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '0');
+	glRasterPos2i(-38, 63);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '1');
+	glRasterPos2i(-41, 63);
+	glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '1');
+}
+
+//front page 
+void frontscreen(void)
+{
+
+	glClear(GL_COLOR_BUFFER_BIT);
+	glLoadIdentity();
+	glColor3f(1, 1, 1);
+	drawstring(55, -80, " Press ENTER to go To next screen", GLUT_BITMAP_HELVETICA_18);
+	drawstring(-75, -80, "Maximize window for better view", GLUT_BITMAP_HELVETICA_12);
+	glColor3f(1, 1, 1);
+	output(-70, 85, "JNN COLLEGE OF ENGINEERING");
+	glColor3f(1, 1, 1);
+	output(-65, 75, "DEPARTMENT OF COMPUTER SCIENCE AND ENGINEERING");
+	glColor3f(1, 0, 1);
+	output(-32, 40, "A Mini Project On:-");
+	glColor3f(0, 1, 0.5);
+	output(-35, 30, "\"ANALOG CLOCK WITH PENDULUM AND DIGITAL CLOCK \"");
+	glColor3f(1, 0, 1);
+	output(-35, 12, "By :");
+	glColor3f(1, 0, 0);
+	output(-35, 5, "Suraj K R,Siddesh,Sneha H M,Teju B N ");
+
+	output(40, 80, "");
+	glColor3f(1, 0, 1);
+	output(-35, -30, "Under the Guidence of :");
+	glColor3f(1, 0, 0);
+	output(40, 50, " ");
+	glColor3f(1, 0, 0);
+	output(1, -45, "Mrs.Sushma R B");
+	glColor3f(1, 0, 0);
+	drawstring(4, -55, "Asst.Professor,Dept. of CSE", GLUT_BITMAP_HELVETICA_12);
+	glColor3f(1, 0, 0);
+	output(40, 30, " ");
+	glColor3f(1, 0, 0);
+	output(1, -65, "Mr.Chakrapani D S");
+
+	drawstring(4, -75, "Asst.Processor,Dept. of CSE", GLUT_BITMAP_HELVETICA_12);
+	glFlush();
+
+}
+
+void startscreen()
+{
+
+	glClear(GL_COLOR_BUFFER_BIT);
+	glColor3f(0.0, 1.0, 0.0);
+	output(-10, 10, "1.Analog Clock");
+	output(-10, 7, "2.Digital Clock");
+
+	glFlush();
+}
+
+void newLine(float rStart, float rEnd, float angle) {
+	float c = cos(angle), s = sin(angle);
+	glVertex2f(clockR * rStart * c, clockR * rStart * s);
+	glVertex2f(clockR * rEnd * c, clockR * rEnd * s);
+}
+void init(void)
+{
+	/** For Opacity Enable **/
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
+
+	glClearColor(0, 0, 0, 0);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluOrtho2D(0, 125, 0, 60);
+}
+
+//Display Function
+void RenderScene(void) {
+	int i;
+	glClear(GL_COLOR_BUFFER_BIT);
+	if (df == 10)
+		frontscreen();
+	else  if (df == 0)
+		startscreen();
+	else if (df == 1)
+	{
+		glColor3f(1.0f, 0.0f, 0.0f);
+		glLineWidth(2.0f);
+		glEnable(GL_LINE_SMOOTH);
+		glEnable(GL_POINT_SMOOTH);
+		glEnable(GL_POLYGON_SMOOTH);
+
+		glBegin(GL_LINES);
+		for (i = 0; i < 60; i++) {
+			if (i % 5) { // normal minute
+				if (i % 5 == 1)
+					glColor3f(0.0f, 1.0f, 1.0f);
+				newLine(minStart, minEnd, i * angle1min);
+			}
+			/*else {
+				glColor3f(0.0f, 1.0f, 0.0f);
+				newLine(stepStart, stepEnd, i * angle1min);
+			}*/
+		}
+		glEnd();
+
+		glLineWidth(3.0f);
+		glBegin(GL_LINES);
+		newLine(0.0f, 0.5f, -angleHour + M_PI / 2);
+		newLine(0.0f, 0.8f, -angleMin + M_PI / 2);
+		glEnd();
+
+		glLineWidth(1.0f);
+		glColor3f(0.0f, 0.0f, 1.0f);
+		glBegin(GL_LINES);
+		newLine(0.0f, 0.8f, -angleSec + M_PI / 2);
+		glEnd();
+		glColor3f(1, 0, 0);
+		numbers();
+
+	}
+
+	else if (df == 2) {
+		glClear(GL_COLOR_BUFFER_BIT);
+
+
+		circle(1, 47, 46, 255, 00, 0, (a & 1 ? .1 : .9));
+		circle(1, 46, 38, 255, 00, 0, (a & 1 ? .1 : .9));
+		circle(1, 82, 46, 255, 00, 0, (a & 1 ? .1 : .9));
+		circle(1, 81, 38, 255, 00, 0, (a & 1 ? .1 : .9));
+
+
+
+
+
+
+		time_t CLK = time(0);
+		tm* clk = localtime(&CLK);
+
+
+
+
+
+
+		/****************************************          Time          ***************************************************/
+
+		int time[3] = { clk->tm_hour,clk->tm_min,clk->tm_sec };
+
+		for (int p = 0; p < 3; p++)
+		{
+			string A = "00";
+
+			time[p] -= (!p && time[p] > 12 ? 12 : 0);
+
+			if (p == 0 && time[p] == 0)time[p] = 12;
+
+			for (int t = 0; t < 2; t++) {
+				A[t] += time[p] % 10;
+				time[p] /= 10;
+			}
+			swap(A[0], A[1]);
+
+
+			for (int k = 0; k < 2; k++)
+			{
+				int B = A[k] - '0';
+				for (int i = 0; i < 7; i++)
+				{
+
+					glColor4d(195 / 255.0, 60 / 255.0, 0 / 255.0, (!digits[B % 10][i] || (!k && !B && !p) ? .08 : 1));
+
+					glBegin(GL_POLYGON);
+					for (int j = 0; j < 6; j++)
+						glVertex2d(pol[i][j][0] + (p * 35) + (k * 13) - 2, pol[i][j][1] - 3);
+					glEnd();
+				}
+			}
+		}
+
+
+
+
+
+
+
+
+		/****************************************          Date          ***************************************************/
+
+
+
+
+		int date[3] = { clk->tm_mday , clk->tm_mon + 1 , clk->tm_year + 1900 };
+
+		for (int p = 0; p < 3; p++)
+		{
+			string A = "0000";
+
+			for (int t = 0; t < 4; t++) {
+				A[t] += date[p] % 10;
+				date[p] /= 10;
+			}
+			reverse(A.begin(), A.end());
+			if (p != 2)A = A.substr(2, 2);
+
+
+			for (int k = 0; k < 2 + (p == 2 ? 2 : 0); k++)
+			{
+				int B = A[k] - '0';
+				for (int i = 0; i < 7; i++)
+				{
+
+					glColor4d(1, 0, 0, (!digits[B % 10][i] || (!k && !B) ? .08 : 1));
+
+					glBegin(GL_POLYGON);
+					for (int j = 0; j < 6; j++)
+						glVertex2d((pol[i][j][0] + (p * 40) + (k * 13)) * 0.7 + 3 + (p == 2 ? 3 : 0), (pol[i][j][1] - 20) * 0.7 - 3);
+					glEnd();
+				}
+			}
+		}
+
+
+	}
+
+
+
+
+
+	a++;
+	glFlush();
+	glutSwapBuffers();
+}
+
+void import_data()
+{
+
+	int temp[10][7] = { {1,2,3,5,6,7,7},{6,7,7,7,7,7,7},{2,3,4,5,6,6,6},{3,4,5,6,7,7,7},{1,4,6,7,7,7,7},{1,3,4,5,7,7,7},{1,2,3,4,5,7,7},{5,6,7,7,7,7,7},{1,2,3,4,5,6,7},{1,3,4,5,6,7,7} };;
+	for (int i = 0; i < 10; i++) {
+		for (int j = 0; j < 7; j++)digits[i][j] = 0;
+		for (int j = 0; j < 7; j++)digits[i][temp[i][j] - 1] = 1;
+	}
+}
+
+void TimerFunction(int value) {
+	struct timeb tb;
+	time_t tim = time(0);
+	struct tm* t;
+	t = localtime(&tim);
+	ftime(&tb);
+
+	angleSec = (float)(t->tm_sec + (float)tb.millitm / 1000.0f) / 30.0f * M_PI;
+	angleMin = (float)(t->tm_min) / 30.0f * M_PI + angleSec / 60.0f;
+	angleHour = (float)(t->tm_hour > 12 ? t->tm_hour - 12 : t->tm_hour) / 6.0f * M_PI +
+		angleMin / 12.0f;
+	glutTimerFunc(refreshMills, Timer, 0);
+
+	glutPostRedisplay();
+	glutTimerFunc(33, TimerFunction, 1);
+}
+void SetupRC(void) {
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glPointSize(18.0);
+
+	glMatrixMode(GL_MODELVIEW);
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+}
+
+///////////////////////////////////////////////////////////
+// Called by GLUT library when the window has chanaged size
+//void clockpage()
+void keyboard(unsigned char key, int x, int y)
+{
+
+	if (df == 10 && key == 13)
+		df = 0;
+	else if ((df == 0 || df == 4 || df == 5) && key == '1')
+	{
+		df = 1;
+		glutPostRedisplay();
+	}
+	else if (df == 0 && key == '2')
+		df = 2;
+	glutPostRedisplay();
+
+
+}
+
+
+void ChangeSize(GLsizei w, GLsizei h)
+{
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
+	GLfloat aspectRatio;
+
+	// Prevent a divide by zero
+	if (h == 0)
+		h = 1;
+
+	// Set Viewport to window dimensions
+	glViewport(0, 0, w, h);
+
+	// Reset coordinate system
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	// Establish clipping volume (left, right, bottom, top, near, far)
+	aspectRatio = (GLfloat)w / (GLfloat)h;
+	if (w <= h)
+		glOrtho(-clockVol, clockVol, -clockVol / aspectRatio, clockVol / aspectRatio, 1.0, -1.0);
+	else
+		glOrtho(-clockVol * aspectRatio, clockVol * aspectRatio, -clockVol, clockVol, 1.0, -1.0);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+}
+
+
+int main(int argc, char** argv)
+{
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+	glutInitWindowSize(600, 600);
+	glutCreateWindow("Analog Clock");
+	glutReshapeFunc(ChangeSize);
+	glutDisplayFunc(RenderScene);
+	glutKeyboardFunc(keyboard);
+	glutTimerFunc(33, TimerFunction, 1);
+	glutInitWindowPosition(60, 60);
+	glutInitWindowSize(1250, 600);
+	glutCreateWindow("Digital Clock");
+	SetupRC();
+	//myinit();
+	glutMainLoop();
+	return 0;
+}
